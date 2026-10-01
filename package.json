@@ -39,20 +39,27 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
-      ],
-      "artifactName": "FNF-Asset-Prep-${version}-${arch}-${target}.${ext}"
+      ]
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "createStartMenuShortcut": true,
+      "artifactName": "FNF-Asset-Prep-Setup-${version}-${arch}.${ext}"
+    },
+    "portable": {
+      "artifactName": "FNF-Asset-Prep-Portable-${version}-${arch}.${ext}"
     }
   }
 }
