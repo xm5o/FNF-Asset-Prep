@@ -1,7 +1,7 @@
 <Window x:Class="FNFAssetPrep.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="FNF Asset Prep"
+        Title="FNF Asset Prep - Preview 3"
         Width="1120"
         Height="760"
         MinWidth="940"
@@ -40,6 +40,10 @@
             <StatusBarItem>
                 <TextBlock x:Name="ThemeStatusText" Text="Theme"/>
             </StatusBarItem>
+            <Separator/>
+            <StatusBarItem>
+                <TextBlock Text="Preview 3 • 2026-10-02"/>
+            </StatusBarItem>
         </StatusBar>
 
         <Grid Background="{DynamicResource AppBackgroundBrush}">
@@ -57,7 +61,7 @@
                         <TextBlock Text="FNF Asset Prep"
                                    FontSize="19"
                                    FontWeight="SemiBold"/>
-                        <TextBlock Text="Desktop toolbox"
+                        <TextBlock Text="Preview 3 desktop toolbox"
                                    Foreground="{DynamicResource MutedTextBrush}"
                                    Margin="0,3,0,0"/>
                     </StackPanel>
