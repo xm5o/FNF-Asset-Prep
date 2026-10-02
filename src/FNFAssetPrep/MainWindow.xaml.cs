@@ -7,7 +7,6 @@ using System.Windows.Input;
 using FNFAssetPrep.Models;
 using FNFAssetPrep.Services;
 using Microsoft.Win32;
-using Forms = System.Windows.Forms;
 
 namespace FNFAssetPrep;
 
@@ -120,18 +119,18 @@ public partial class MainWindow : Window
     {
         if (_isRunning) return;
 
-        using var dialog = new Forms.FolderBrowserDialog
+        var dialog = new OpenFolderDialog
         {
-            Description = "Choose where prepared assets will be saved",
-            ShowNewFolderButton = true,
-            SelectedPath = Directory.Exists(OutputFolderText.Text)
+            Title = "Choose where prepared assets will be saved",
+            Multiselect = false,
+            InitialDirectory = Directory.Exists(OutputFolderText.Text)
                 ? OutputFolderText.Text
                 : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
         };
 
-        if (dialog.ShowDialog() == Forms.DialogResult.OK)
+        if (dialog.ShowDialog(this) == true)
         {
-            OutputFolderText.Text = dialog.SelectedPath;
+            OutputFolderText.Text = dialog.FolderName;
             UpdateUi();
         }
     }
