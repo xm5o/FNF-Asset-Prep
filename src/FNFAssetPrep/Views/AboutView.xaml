@@ -6,7 +6,7 @@
         <StackPanel Margin="20" MaxWidth="760" HorizontalAlignment="Left">
             <TextBlock Text="About" FontSize="27" FontWeight="SemiBold"/>
             <TextBlock Text="FNF Asset Prep" FontSize="20" FontWeight="SemiBold" Margin="0,22,0,0"/>
-            <TextBlock Text="Native Windows development build"
+            <TextBlock Text="Preview 3 • Native Windows development build"
                        Foreground="{DynamicResource MutedTextBrush}"
                        Margin="0,4,0,0"/>
             <TextBlock Text="A desktop toolbox for preparing FNF assets, converting local audio, and saving permitted YouTube audio."
