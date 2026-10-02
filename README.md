@@ -1,94 +1,79 @@
 # FNF Asset Prep
 
-FNF Asset Prep prepares source images and audio for Friday Night Funkin' mods.
+FNF Asset Prep is a native Windows desktop toolbox for Friday Night Funkin' assets and audio.
 
-This branch contains the native Windows rewrite.
+This branch contains the development rewrite. The public v0.1.0 release is unchanged.
 
-## Native rewrite
+## Native app
 
-The old public v0.1.0 app uses Electron. The new development build does not.
+The development build uses C#, .NET 8, WPF, native Windows dialogs, ImageSharp, FFmpeg, and yt-dlp.
 
-The native rewrite uses:
+There is no HTML, CSS, Electron, or browser-based UI in this branch.
 
-- C#
-- .NET 8
-- WPF
-- Windows file dialogs
-- A normal Windows menu, toolbar, file table, and status bar
-- ImageSharp for image decoding and PNG output
-- FFmpeg for OGG Vorbis audio output
+## Pages
 
-There is no HTML, CSS, browser view, or JavaScript UI in this version.
+### Asset Prep
 
-## What it does
+Prepare selected files for FNF. Images become PNG and audio becomes OGG. Source files are never edited in place.
 
-Images:
+### YouTube Audio
 
-- PNG stays PNG
-- JPG to PNG
-- JPEG to PNG
-- WebP to PNG
-- BMP to PNG
-- TIFF to PNG
+This page is for videos you own or have permission to download.
 
-Audio:
+Single-video output formats:
 
-- OGG stays OGG
-- WAV to OGG
-- MP3 to OGG
-- FLAC to OGG
-- M4A to OGG
-- AAC to OGG
+- OGG
+- MP3
+- WAV
+- FLAC
+- M4A
+- Opus
+- AAC
+- ALAC
 
-Source files are never edited in place.
+The app checks a link first and shows its title, channel, and duration. Playlists are skipped in this test build.
 
-If an output name already exists, the app creates a new name such as:
+### Settings
 
-\`\`\`text
-Inst.ogg
-Inst_2.ogg
-Inst_3.ogg
-\`\`\`
+Settings are stored locally in:
 
-## Desktop controls
+```text
+%LOCALAPPDATA%\FNF Asset Prep\settings.json
+```
 
-- Ctrl+O: Add files
-- Ctrl+Shift+O: Choose output folder
-- Delete: Remove selected files
-- Ctrl+L: Clear the list
-- Drag and drop: Add supported files
+Saved options:
+
+- Default Asset Prep output folder
+- Default YouTube Audio output folder
+- Default OGG quality
+- Default download format
+- Open output folder after a successful task
+- Confirm before clearing the Asset Prep list
 
 ## Test build
 
-Pushes to the \`native-rewrite\` branch create a Windows test artifact through GitHub Actions.
-
-The test build is not published to GitHub Releases.
+Pushes to `native-rewrite` create a GitHub Actions artifact only. No GitHub Release is created.
 
 The artifact contains:
 
-\`\`\`text
+```text
 FNF-Asset-Prep-Native-Test.exe
 tools/
   ffmpeg.exe
-\`\`\`
+  yt-dlp.exe
+```
 
-Keep the \`tools\` folder next to the EXE so audio conversion works.
+Keep the tools folder next to the EXE.
 
 ## Build locally
 
-You need the .NET 8 SDK.
+Install the .NET 8 SDK.
 
-\`\`\`powershell
+```powershell
 dotnet restore FNFAssetPrep.sln
 dotnet run --project src/FNFAssetPrep/FNFAssetPrep.csproj
-\`\`\`
+```
 
-For audio conversion, place \`ffmpeg.exe\` here:
+## Development status
 
-\`\`\`text
-src/FNFAssetPrep/bin/Debug/net8.0-windows/tools/ffmpeg.exe
-\`\`\`
-
-## Status
-
-This is a development rewrite for testing. The public v0.1.0 release stays unchanged until the native version is tested and approved.
+This version is for testing and is not the public release.

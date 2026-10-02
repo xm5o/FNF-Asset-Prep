@@ -1,0 +1,70 @@
+<UserControl x:Class="FNFAssetPrep.Views.AboutView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="18" MaxWidth="760" HorizontalAlignment="Left">
+            <TextBlock Text="About"
+                       FontSize="26"
+                       FontWeight="SemiBold"/>
+
+            <TextBlock Text="FNF Asset Prep"
+                       FontSize="20"
+                       FontWeight="SemiBold"
+                       Margin="0,22,0,0"/>
+
+            <TextBlock Text="Native Windows development build"
+                       Foreground="#666666"
+                       Margin="0,4,0,0"/>
+
+            <TextBlock Text="A small desktop toolbox for preparing FNF assets and working with audio."
+                       TextWrapping="Wrap"
+                       Margin="0,14,0,0"/>
+
+            <GroupBox Header="This build" Margin="0,18,0,0">
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="180"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="UI"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="C# and WPF"/>
+
+                    <TextBlock Grid.Row="1" Text="Runtime" Margin="0,6,0,0"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="RuntimeText" Margin="0,6,0,0"/>
+
+                    <TextBlock Grid.Row="2" Text="FFmpeg" Margin="0,6,0,0"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="FfmpegText" Margin="0,6,0,0"/>
+
+                    <TextBlock Grid.Row="3" Text="yt-dlp" Margin="0,6,0,0"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" x:Name="YtDlpText" Margin="0,6,0,0"/>
+                </Grid>
+            </GroupBox>
+
+            <GroupBox Header="Privacy" Margin="0,12,0,0">
+                <StackPanel Margin="10">
+                    <TextBlock Text="Asset Prep works with local files on your PC."
+                               TextWrapping="Wrap"/>
+                    <TextBlock Text="Settings are stored locally in your AppData folder."
+                               TextWrapping="Wrap"
+                               Margin="0,5,0,0"/>
+                    <TextBlock Text="The YouTube Audio page connects to YouTube only when you check or download a link."
+                               TextWrapping="Wrap"
+                               Margin="0,5,0,0"/>
+                </StackPanel>
+            </GroupBox>
+
+            <TextBlock Text="Only download videos you own or have permission to save."
+                       Foreground="#666666"
+                       TextWrapping="Wrap"
+                       Margin="0,16,0,0"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
