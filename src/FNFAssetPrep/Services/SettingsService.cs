@@ -41,20 +41,31 @@ public sealed class SettingsService
                 return;
             }
 
-            loaded.AssetOutputFolder = string.IsNullOrWhiteSpace(loaded.AssetOutputFolder)
-                ? defaults.AssetOutputFolder
-                : loaded.AssetOutputFolder;
+            loaded.ThemeMode = Validate(loaded.ThemeMode, new[] { "System", "Light", "Dark" }, "System");
+            loaded.StartPage = Validate(loaded.StartPage, new[] { "Asset Prep", "Audio Converter", "YouTube Audio" }, "Asset Prep");
+            loaded.LastPage = Validate(loaded.LastPage, new[] { "assets", "converter", "youtube", "settings", "about" }, "assets");
 
-            loaded.DownloadOutputFolder = string.IsNullOrWhiteSpace(loaded.DownloadOutputFolder)
-                ? defaults.DownloadOutputFolder
-                : loaded.DownloadOutputFolder;
+            loaded.AssetOutputFolder = FolderOrDefault(loaded.AssetOutputFolder, defaults.AssetOutputFolder);
+            loaded.ConverterOutputFolder = FolderOrDefault(loaded.ConverterOutputFolder, defaults.ConverterOutputFolder);
+            loaded.DownloadOutputFolder = FolderOrDefault(loaded.DownloadOutputFolder, defaults.DownloadOutputFolder);
 
             loaded.OggQuality = Math.Clamp(loaded.OggQuality, 3, 8);
 
-            var validFormats = new[] { "OGG", "MP3", "WAV", "FLAC", "M4A", "OPUS", "AAC", "ALAC" };
-            loaded.DownloadFormat = validFormats.Contains(loaded.DownloadFormat, StringComparer.OrdinalIgnoreCase)
-                ? loaded.DownloadFormat.ToUpperInvariant()
-                : "OGG";
+            var formats = new[] { "OGG", "MP3", "WAV", "FLAC", "M4A", "OPUS", "AAC", "ALAC" };
+            loaded.ConverterFormat = Validate(loaded.ConverterFormat, formats, "OGG").ToUpperInvariant();
+            loaded.DownloadFormat = Validate(loaded.DownloadFormat, formats, "OGG").ToUpperInvariant();
+
+            var qualities = new[] { "Best", "High", "Balanced", "Small" };
+            loaded.ConverterQuality = Validate(loaded.ConverterQuality, qualities, "High");
+            loaded.DownloadQuality = Validate(loaded.DownloadQuality, qualities, "Best");
+
+            loaded.DownloadFileNameMode = Validate(
+                loaded.DownloadFileNameMode,
+                new[] { "Title", "Title [ID]", "Channel - Title" },
+                "Title [ID]");
+
+            loaded.WindowWidth = Math.Clamp(loaded.WindowWidth, 940, 2200);
+            loaded.WindowHeight = Math.Clamp(loaded.WindowHeight, 620, 1600);
 
             Settings = loaded;
         }
@@ -85,4 +96,11 @@ public sealed class SettingsService
     {
         Save(AppSettings.CreateDefaults());
     }
+
+    private static string FolderOrDefault(string? value, string fallback) =>
+        string.IsNullOrWhiteSpace(value) ? fallback : value;
+
+    private static string Validate(string? value, IEnumerable<string> allowed, string fallback) =>
+        allowed.FirstOrDefault(item =>
+            string.Equals(item, value, StringComparison.OrdinalIgnoreCase)) ?? fallback;
 }
