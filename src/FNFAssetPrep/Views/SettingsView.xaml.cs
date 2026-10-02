@@ -21,15 +21,28 @@ public partial class SettingsView : UserControl
 
     public void Refresh()
     {
-        var settings = _settingsService.Settings;
+        var s = _settingsService.Settings;
 
-        AssetFolderText.Text = settings.AssetOutputFolder;
-        DownloadFolderText.Text = settings.DownloadOutputFolder;
-        OpenFolderCheckBox.IsChecked = settings.OpenFolderAfterTask;
-        ConfirmClearCheckBox.IsChecked = settings.ConfirmBeforeClear;
+        AssetFolderText.Text = s.AssetOutputFolder;
+        ConverterFolderText.Text = s.ConverterOutputFolder;
+        DownloadFolderText.Text = s.DownloadOutputFolder;
 
-        SelectByContent(DownloadFormatCombo, settings.DownloadFormat);
-        SelectByTag(OggQualityCombo, settings.OggQuality.ToString());
+        SelectByContent(ThemeCombo, s.ThemeMode);
+        SelectByContent(StartPageCombo, s.StartPage);
+        SelectByContent(ConverterFormatCombo, s.ConverterFormat);
+        SelectByContent(ConverterQualityCombo, s.ConverterQuality);
+        SelectByContent(DownloadFormatCombo, s.DownloadFormat);
+        SelectByContent(DownloadQualityCombo, s.DownloadQuality);
+        SelectByContent(FileNameModeCombo, s.DownloadFileNameMode);
+        SelectByTag(OggQualityCombo, s.OggQuality.ToString());
+
+        RememberPageCheckBox.IsChecked = s.RememberLastPage;
+        RememberWindowCheckBox.IsChecked = s.RememberWindowSize;
+        EmbedMetadataCheckBox.IsChecked = s.EmbedMetadata;
+        EmbedThumbnailCheckBox.IsChecked = s.EmbedThumbnail;
+        OpenFolderCheckBox.IsChecked = s.OpenFolderAfterTask;
+        ConfirmClearCheckBox.IsChecked = s.ConfirmBeforeClear;
+        CompletionDialogCheckBox.IsChecked = s.ShowCompletionDialog;
 
         ToolsStatusText.Text =
             (AssetProcessor.HasAudioEngine ? "FFmpeg ready" : "FFmpeg missing")
@@ -39,67 +52,67 @@ public partial class SettingsView : UserControl
         SettingsPathText.Text = _settingsService.SettingsPath;
     }
 
-    private void BrowseAssetFolder_Click(object sender, RoutedEventArgs e)
-    {
-        var selected = BrowseForFolder(
-            "Choose the default Asset Prep output folder",
-            AssetFolderText.Text);
+    private void BrowseAssetFolder_Click(object sender, RoutedEventArgs e) =>
+        SetFolder(AssetFolderText, "Choose the default Asset Prep output folder");
 
-        if (!string.IsNullOrWhiteSpace(selected))
-        {
-            AssetFolderText.Text = selected;
-        }
-    }
+    private void BrowseConverterFolder_Click(object sender, RoutedEventArgs e) =>
+        SetFolder(ConverterFolderText, "Choose the default Audio Converter output folder");
 
-    private void BrowseDownloadFolder_Click(object sender, RoutedEventArgs e)
-    {
-        var selected = BrowseForFolder(
-            "Choose the default YouTube Audio output folder",
-            DownloadFolderText.Text);
+    private void BrowseDownloadFolder_Click(object sender, RoutedEventArgs e) =>
+        SetFolder(DownloadFolderText, "Choose the default YouTube Audio output folder");
 
-        if (!string.IsNullOrWhiteSpace(selected))
-        {
-            DownloadFolderText.Text = selected;
-        }
-    }
-
-    private string? BrowseForFolder(string title, string current)
+    private void SetFolder(TextBox target, string title)
     {
         var dialog = new OpenFolderDialog
         {
             Title = title,
             Multiselect = false,
-            InitialDirectory = Directory.Exists(current)
-                ? current
+            InitialDirectory = Directory.Exists(target.Text)
+                ? target.Text
                 : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
         };
 
-        return dialog.ShowDialog(Window.GetWindow(this)) == true
-            ? dialog.FolderName
-            : null;
+        if (dialog.ShowDialog(Window.GetWindow(this)) == true)
+        {
+            target.Text = dialog.FolderName;
+        }
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)
     {
+        var old = _settingsService.Settings;
+
         var settings = new AppSettings
         {
+            ThemeMode = ReadContent(ThemeCombo, "System"),
+            StartPage = ReadContent(StartPageCombo, "Asset Prep"),
+            RememberLastPage = RememberPageCheckBox.IsChecked == true,
+            LastPage = old.LastPage,
+            RememberWindowSize = RememberWindowCheckBox.IsChecked == true,
+            WindowWidth = old.WindowWidth,
+            WindowHeight = old.WindowHeight,
+
             AssetOutputFolder = AssetFolderText.Text.Trim(),
-            DownloadOutputFolder = DownloadFolderText.Text.Trim(),
             OggQuality = ReadTagInt(OggQualityCombo, 6),
+
+            ConverterOutputFolder = ConverterFolderText.Text.Trim(),
+            ConverterFormat = ReadContent(ConverterFormatCombo, "OGG"),
+            ConverterQuality = ReadContent(ConverterQualityCombo, "High"),
+
+            DownloadOutputFolder = DownloadFolderText.Text.Trim(),
             DownloadFormat = ReadContent(DownloadFormatCombo, "OGG"),
+            DownloadQuality = ReadContent(DownloadQualityCombo, "Best"),
+            DownloadFileNameMode = ReadContent(FileNameModeCombo, "Title [ID]"),
+            EmbedMetadata = EmbedMetadataCheckBox.IsChecked == true,
+            EmbedThumbnail = EmbedThumbnailCheckBox.IsChecked == true,
+
             OpenFolderAfterTask = OpenFolderCheckBox.IsChecked == true,
-            ConfirmBeforeClear = ConfirmClearCheckBox.IsChecked == true
+            ConfirmBeforeClear = ConfirmClearCheckBox.IsChecked == true,
+            ShowCompletionDialog = CompletionDialogCheckBox.IsChecked == true
         };
 
         _settingsService.Save(settings);
         SettingsSaved?.Invoke(this, EventArgs.Empty);
-
-        MessageBox.Show(
-            Window.GetWindow(this),
-            "Settings saved.",
-            "FNF Asset Prep",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
     }
 
     private void Reset_Click(object sender, RoutedEventArgs e)
@@ -111,10 +124,7 @@ public partial class SettingsView : UserControl
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
 
-        if (answer != MessageBoxResult.Yes)
-        {
-            return;
-        }
+        if (answer != MessageBoxResult.Yes) return;
 
         _settingsService.Reset();
         Refresh();
@@ -125,10 +135,7 @@ public partial class SettingsView : UserControl
     {
         foreach (var item in comboBox.Items.OfType<ComboBoxItem>())
         {
-            if (string.Equals(
-                item.Content?.ToString(),
-                value,
-                StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(item.Content?.ToString(), value, StringComparison.OrdinalIgnoreCase))
             {
                 comboBox.SelectedItem = item;
                 return;
@@ -152,18 +159,14 @@ public partial class SettingsView : UserControl
         comboBox.SelectedIndex = 0;
     }
 
-    private static int ReadTagInt(ComboBox comboBox, int fallback)
-    {
-        return comboBox.SelectedItem is ComboBoxItem item
-            && int.TryParse(item.Tag?.ToString(), out var value)
-                ? value
-                : fallback;
-    }
+    private static int ReadTagInt(ComboBox comboBox, int fallback) =>
+        comboBox.SelectedItem is ComboBoxItem item
+        && int.TryParse(item.Tag?.ToString(), out var value)
+            ? value
+            : fallback;
 
-    private static string ReadContent(ComboBox comboBox, string fallback)
-    {
-        return comboBox.SelectedItem is ComboBoxItem item
+    private static string ReadContent(ComboBox comboBox, string fallback) =>
+        comboBox.SelectedItem is ComboBoxItem item
             ? item.Content?.ToString() ?? fallback
             : fallback;
-    }
 }

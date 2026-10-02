@@ -21,7 +21,6 @@ public partial class AssetPrepView : UserControl
     {
         InitializeComponent();
         DataContext = this;
-
         _settingsService = settingsService;
         ApplySettings(forceFolder: true);
         UpdateUi();
@@ -54,10 +53,7 @@ public partial class AssetPrepView : UserControl
         }
     }
 
-    private void AddFiles_Click(object sender, RoutedEventArgs e)
-    {
-        AddFiles();
-    }
+    private void AddFiles_Click(object sender, RoutedEventArgs e) => AddFiles();
 
     private void AddPaths(IEnumerable<string> paths)
     {
@@ -67,9 +63,7 @@ public partial class AssetPrepView : UserControl
 
         foreach (var path in paths)
         {
-            if (!File.Exists(path)
-                || !AssetProcessor.IsSupported(path)
-                || !existing.Add(path))
+            if (!File.Exists(path) || !AssetProcessor.IsSupported(path) || !existing.Add(path))
             {
                 continue;
             }
@@ -84,9 +78,7 @@ public partial class AssetPrepView : UserControl
     {
         if (_isRunning) return;
 
-        var selected = AssetGrid.SelectedItems.Cast<AssetItem>().ToList();
-
-        foreach (var item in selected)
+        foreach (var item in AssetGrid.SelectedItems.Cast<AssetItem>().ToList())
         {
             Assets.Remove(item);
         }
@@ -107,10 +99,7 @@ public partial class AssetPrepView : UserControl
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
 
-            if (answer != MessageBoxResult.Yes)
-            {
-                return;
-            }
+            if (answer != MessageBoxResult.Yes) return;
         }
 
         Assets.Clear();
@@ -140,37 +129,22 @@ public partial class AssetPrepView : UserControl
         }
     }
 
-    private void OpenOutput_Click(object sender, RoutedEventArgs e)
-    {
+    private void OpenOutput_Click(object sender, RoutedEventArgs e) =>
         ShellService.OpenFolder(OutputFolderText.Text.Trim());
-    }
 
     private async void PrepFiles_Click(object sender, RoutedEventArgs e)
     {
         if (_isRunning || Assets.Count == 0) return;
 
         var outputDirectory = OutputFolderText.Text.Trim();
+        if (string.IsNullOrWhiteSpace(outputDirectory)) return;
 
-        if (string.IsNullOrWhiteSpace(outputDirectory))
+        if (Assets.Any(item => item.Type == "Audio" && item.SourceFormat != "OGG")
+            && !AssetProcessor.HasAudioEngine)
         {
             MessageBox.Show(
                 Window.GetWindow(this),
-                "Choose an output folder first.",
-                "FNF Asset Prep",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-            return;
-        }
-
-        var audioItems = Assets
-            .Where(item => item.Type == "Audio" && item.SourceFormat != "OGG")
-            .ToList();
-
-        if (audioItems.Count > 0 && !AssetProcessor.HasAudioEngine)
-        {
-            MessageBox.Show(
-                Window.GetWindow(this),
-                "FFmpeg is missing from the tools folder. Image conversion still works, but audio conversion needs FFmpeg.",
+                "FFmpeg is missing from the tools folder.",
                 "Audio engine missing",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
@@ -178,7 +152,7 @@ public partial class AssetPrepView : UserControl
         }
 
         _isRunning = true;
-        SetControlsEnabled(false);
+        UpdateUi();
 
         ProgressBar.Maximum = Assets.Count;
         ProgressBar.Value = 0;
@@ -192,17 +166,12 @@ public partial class AssetPrepView : UserControl
             var item = Assets[index];
             item.Status = "Working";
             item.StatusDetail = null;
-            ProgressText.Text = "Working on " + item.FileName;
+            ProgressText.Text = $"{index + 1} / {Assets.Count}";
 
             try
             {
-                var output = await _processor.ProcessAsync(
-                    item,
-                    outputDirectory,
-                    quality);
-
+                item.StatusDetail = await _processor.ProcessAsync(item, outputDirectory, quality);
                 item.Status = "Done";
-                item.StatusDetail = output;
                 successCount++;
             }
             catch (Exception exception)
@@ -216,16 +185,24 @@ public partial class AssetPrepView : UserControl
         }
 
         _isRunning = false;
-        SetControlsEnabled(true);
         UpdateUi();
-
         ProgressText.Text = failedCount == 0
-            ? successCount + " file(s) prepared."
-            : successCount + " completed, " + failedCount + " failed.";
+            ? $"{successCount} ready"
+            : $"{successCount} ready, {failedCount} failed";
 
         if (failedCount == 0 && _settingsService.Settings.OpenFolderAfterTask)
         {
             ShellService.OpenFolder(outputDirectory);
+        }
+
+        if (_settingsService.Settings.ShowCompletionDialog)
+        {
+            MessageBox.Show(
+                Window.GetWindow(this),
+                ProgressText.Text,
+                "FNF Asset Prep",
+                MessageBoxButton.OK,
+                failedCount == 0 ? MessageBoxImage.Information : MessageBoxImage.Warning);
         }
     }
 
@@ -243,34 +220,21 @@ public partial class AssetPrepView : UserControl
         QualityCombo.SelectedIndex = 3;
     }
 
-    private int GetSelectedQuality()
-    {
-        return QualityCombo.SelectedItem is ComboBoxItem item
-            && int.TryParse(item.Tag?.ToString(), out var quality)
-                ? quality
-                : 6;
-    }
-
-    private void SetControlsEnabled(bool enabled)
-    {
-        AssetGrid.IsEnabled = enabled;
-        PrepButton.IsEnabled = enabled && Assets.Count > 0;
-    }
+    private int GetSelectedQuality() =>
+        QualityCombo.SelectedItem is ComboBoxItem item
+        && int.TryParse(item.Tag?.ToString(), out var quality)
+            ? quality
+            : 6;
 
     private void UpdateUi()
     {
-        var images = Assets.Count(item => item.Type == "Image");
-        var audio = Assets.Count(item => item.Type == "Audio");
+        var hasFiles = Assets.Count > 0;
+        EmptyState.Visibility = hasFiles ? Visibility.Collapsed : Visibility.Visible;
+        FileTablePanel.Visibility = hasFiles ? Visibility.Visible : Visibility.Collapsed;
 
-        ImageCountText.Text = images.ToString();
-        AudioCountText.Text = audio.ToString();
-        TotalCountText.Text = Assets.Count.ToString();
-        EmptyHint.Visibility = Assets.Count == 0
-            ? Visibility.Visible
-            : Visibility.Collapsed;
-
+        AssetGrid.IsEnabled = !_isRunning;
         PrepButton.IsEnabled = !_isRunning
-            && Assets.Count > 0
+            && hasFiles
             && !string.IsNullOrWhiteSpace(OutputFolderText.Text);
     }
 
@@ -279,18 +243,13 @@ public partial class AssetPrepView : UserControl
         e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop)
             ? DragDropEffects.Copy
             : DragDropEffects.None;
-
         e.Handled = true;
     }
 
     private void View_Drop(object sender, DragEventArgs e)
     {
         if (_isRunning) return;
-
-        if (e.Data.GetData(DataFormats.FileDrop) is string[] paths)
-        {
-            AddPaths(paths);
-        }
+        if (e.Data.GetData(DataFormats.FileDrop) is string[] paths) AddPaths(paths);
     }
 
     private void View_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -299,17 +258,13 @@ public partial class AssetPrepView : UserControl
         {
             AddFiles();
             e.Handled = true;
-            return;
         }
-
-        if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.L)
+        else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.L)
         {
             Clear_Click(sender, new RoutedEventArgs());
             e.Handled = true;
-            return;
         }
-
-        if (e.Key == Key.Delete)
+        else if (e.Key == Key.Delete)
         {
             RemoveSelected_Click(sender, new RoutedEventArgs());
             e.Handled = true;

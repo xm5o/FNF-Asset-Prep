@@ -2,80 +2,17 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Grid Margin="18">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="14"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="12"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="12"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="16"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="20" MaxWidth="920" HorizontalAlignment="Left">
+            <TextBlock Text="Settings" FontSize="27" FontWeight="SemiBold"/>
+            <TextBlock Text="Defaults are saved on this PC only."
+                       Foreground="{DynamicResource MutedTextBrush}"
+                       Margin="0,4,0,16"/>
 
-            <StackPanel Grid.Row="0">
-                <TextBlock Text="Settings"
-                           FontSize="26"
-                           FontWeight="SemiBold"/>
-                <TextBlock Text="Defaults are saved on this PC only."
-                           Foreground="#666666"
-                           Margin="0,4,0,0"/>
-            </StackPanel>
-
-            <GroupBox Grid.Row="2" Header="Folders">
-                <Grid Margin="10">
+            <GroupBox Header="Appearance and startup">
+                <Grid Margin="12">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="180"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="10"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <TextBlock Grid.Row="0"
-                               Text="Asset Prep output"
-                               VerticalAlignment="Center"/>
-                    <TextBox Grid.Row="0"
-                             Grid.Column="1"
-                             x:Name="AssetFolderText"
-                             IsReadOnly="True"
-                             Padding="7,5"
-                             VerticalContentAlignment="Center"/>
-                    <Button Grid.Row="0"
-                            Grid.Column="2"
-                            Content="Browse..."
-                            Click="BrowseAssetFolder_Click"
-                            Padding="12,4"
-                            Margin="8,0,0,0"/>
-
-                    <TextBlock Grid.Row="2"
-                               Text="YouTube Audio output"
-                               VerticalAlignment="Center"/>
-                    <TextBox Grid.Row="2"
-                             Grid.Column="1"
-                             x:Name="DownloadFolderText"
-                             IsReadOnly="True"
-                             Padding="7,5"
-                             VerticalContentAlignment="Center"/>
-                    <Button Grid.Row="2"
-                            Grid.Column="2"
-                            Content="Browse..."
-                            Click="BrowseDownloadFolder_Click"
-                            Padding="12,4"
-                            Margin="8,0,0,0"/>
-                </Grid>
-            </GroupBox>
-
-            <GroupBox Grid.Row="4" Header="Audio defaults">
-                <Grid Margin="10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="180"/>
+                        <ColumnDefinition Width="210"/>
                         <ColumnDefinition Width="220"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
@@ -83,79 +20,172 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="10"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0"
-                               Text="Asset Prep OGG quality"
-                               VerticalAlignment="Center"/>
-                    <ComboBox Grid.Row="0"
-                              Grid.Column="1"
-                              x:Name="OggQualityCombo">
-                        <ComboBoxItem Content="3 - Smaller file" Tag="3"/>
-                        <ComboBoxItem Content="4" Tag="4"/>
-                        <ComboBoxItem Content="5" Tag="5"/>
-                        <ComboBoxItem Content="6 - Balanced" Tag="6"/>
-                        <ComboBoxItem Content="7" Tag="7"/>
-                        <ComboBoxItem Content="8 - Higher quality" Tag="8"/>
+                    <TextBlock Text="Theme" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="ThemeCombo" Grid.Column="1">
+                        <ComboBoxItem Content="System"/><ComboBoxItem Content="Light"/><ComboBoxItem Content="Dark"/>
                     </ComboBox>
 
-                    <TextBlock Grid.Row="2"
-                               Text="YouTube Audio format"
-                               VerticalAlignment="Center"/>
-                    <ComboBox Grid.Row="2"
-                              Grid.Column="1"
-                              x:Name="DownloadFormatCombo">
-                        <ComboBoxItem Content="OGG"/>
-                        <ComboBoxItem Content="MP3"/>
-                        <ComboBoxItem Content="WAV"/>
-                        <ComboBoxItem Content="FLAC"/>
-                        <ComboBoxItem Content="M4A"/>
-                        <ComboBoxItem Content="OPUS"/>
-                        <ComboBoxItem Content="AAC"/>
-                        <ComboBoxItem Content="ALAC"/>
+                    <TextBlock Grid.Row="2" Text="Start page" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="StartPageCombo" Grid.Row="2" Grid.Column="1">
+                        <ComboBoxItem Content="Asset Prep"/><ComboBoxItem Content="Audio Converter"/><ComboBoxItem Content="YouTube Audio"/>
+                    </ComboBox>
+
+                    <CheckBox x:Name="RememberPageCheckBox"
+                              Grid.Row="4"
+                              Grid.ColumnSpan="3"
+                              Content="Remember the last page I used"/>
+
+                    <CheckBox x:Name="RememberWindowCheckBox"
+                              Grid.Row="6"
+                              Grid.ColumnSpan="3"
+                              Content="Remember window size"/>
+                </Grid>
+            </GroupBox>
+
+            <GroupBox Header="Default folders" Margin="0,12,0,0">
+                <Grid Margin="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="210"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/><RowDefinition Height="10"/>
+                        <RowDefinition Height="Auto"/><RowDefinition Height="10"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Asset Prep output" VerticalAlignment="Center"/>
+                    <TextBox x:Name="AssetFolderText" Grid.Column="1" IsReadOnly="True" Padding="7,5"/>
+                    <Button Grid.Column="2" Content="Browse..." Click="BrowseAssetFolder_Click" Margin="8,0,0,0"/>
+
+                    <TextBlock Grid.Row="2" Text="Audio Converter output" VerticalAlignment="Center"/>
+                    <TextBox x:Name="ConverterFolderText" Grid.Row="2" Grid.Column="1" IsReadOnly="True" Padding="7,5"/>
+                    <Button Grid.Row="2" Grid.Column="2" Content="Browse..." Click="BrowseConverterFolder_Click" Margin="8,0,0,0"/>
+
+                    <TextBlock Grid.Row="4" Text="YouTube Audio output" VerticalAlignment="Center"/>
+                    <TextBox x:Name="DownloadFolderText" Grid.Row="4" Grid.Column="1" IsReadOnly="True" Padding="7,5"/>
+                    <Button Grid.Row="4" Grid.Column="2" Content="Browse..." Click="BrowseDownloadFolder_Click" Margin="8,0,0,0"/>
+                </Grid>
+            </GroupBox>
+
+            <GroupBox Header="Audio defaults" Margin="0,12,0,0">
+                <Grid Margin="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="210"/>
+                        <ColumnDefinition Width="220"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/><RowDefinition Height="10"/>
+                        <RowDefinition Height="Auto"/><RowDefinition Height="10"/>
+                        <RowDefinition Height="Auto"/><RowDefinition Height="10"/>
+                        <RowDefinition Height="Auto"/><RowDefinition Height="10"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Asset Prep OGG quality" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="OggQualityCombo" Grid.Column="1">
+                        <ComboBoxItem Content="3 - Smaller" Tag="3"/><ComboBoxItem Content="4" Tag="4"/>
+                        <ComboBoxItem Content="5" Tag="5"/><ComboBoxItem Content="6 - Balanced" Tag="6"/>
+                        <ComboBoxItem Content="7" Tag="7"/><ComboBoxItem Content="8 - Higher" Tag="8"/>
+                    </ComboBox>
+
+                    <TextBlock Grid.Row="2" Text="Converter format" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="ConverterFormatCombo" Grid.Row="2" Grid.Column="1">
+                        <ComboBoxItem Content="OGG"/><ComboBoxItem Content="MP3"/><ComboBoxItem Content="WAV"/>
+                        <ComboBoxItem Content="FLAC"/><ComboBoxItem Content="M4A"/><ComboBoxItem Content="OPUS"/>
+                        <ComboBoxItem Content="AAC"/><ComboBoxItem Content="ALAC"/>
+                    </ComboBox>
+
+                    <TextBlock Grid.Row="4" Text="Converter quality" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="ConverterQualityCombo" Grid.Row="4" Grid.Column="1">
+                        <ComboBoxItem Content="Best"/><ComboBoxItem Content="High"/>
+                        <ComboBoxItem Content="Balanced"/><ComboBoxItem Content="Small"/>
+                    </ComboBox>
+
+                    <TextBlock Grid.Row="6" Text="YouTube format" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="DownloadFormatCombo" Grid.Row="6" Grid.Column="1">
+                        <ComboBoxItem Content="OGG"/><ComboBoxItem Content="MP3"/><ComboBoxItem Content="WAV"/>
+                        <ComboBoxItem Content="FLAC"/><ComboBoxItem Content="M4A"/><ComboBoxItem Content="OPUS"/>
+                        <ComboBoxItem Content="AAC"/><ComboBoxItem Content="ALAC"/>
+                    </ComboBox>
+
+                    <TextBlock Grid.Row="8" Text="YouTube quality" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="DownloadQualityCombo" Grid.Row="8" Grid.Column="1">
+                        <ComboBoxItem Content="Best"/><ComboBoxItem Content="High"/>
+                        <ComboBoxItem Content="Balanced"/><ComboBoxItem Content="Small"/>
                     </ComboBox>
                 </Grid>
             </GroupBox>
 
-            <GroupBox Grid.Row="6" Header="Behavior">
-                <StackPanel Margin="10">
-                    <CheckBox x:Name="OpenFolderCheckBox"
-                              Content="Open the output folder after a successful task"/>
-                    <CheckBox x:Name="ConfirmClearCheckBox"
-                              Content="Ask before clearing the Asset Prep file list"
-                              Margin="0,8,0,0"/>
+            <GroupBox Header="YouTube Audio" Margin="0,12,0,0">
+                <Grid Margin="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="210"/>
+                        <ColumnDefinition Width="240"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/><RowDefinition Height="10"/>
+                        <RowDefinition Height="Auto"/><RowDefinition Height="10"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="File naming" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="FileNameModeCombo" Grid.Column="1">
+                        <ComboBoxItem Content="Title"/><ComboBoxItem Content="Title [ID]"/><ComboBoxItem Content="Channel - Title"/>
+                    </ComboBox>
+
+                    <CheckBox x:Name="EmbedMetadataCheckBox"
+                              Grid.Row="2"
+                              Grid.ColumnSpan="3"
+                              Content="Embed title and available metadata"/>
+
+                    <CheckBox x:Name="EmbedThumbnailCheckBox"
+                              Grid.Row="4"
+                              Grid.ColumnSpan="3"
+                              Content="Embed video thumbnail when the output format supports it"/>
+                </Grid>
+            </GroupBox>
+
+            <GroupBox Header="Behavior" Margin="0,12,0,0">
+                <StackPanel Margin="12">
+                    <CheckBox x:Name="OpenFolderCheckBox" Content="Open the output folder after a successful task"/>
+                    <CheckBox x:Name="ConfirmClearCheckBox" Content="Ask before clearing the Asset Prep file list" Margin="0,8,0,0"/>
+                    <CheckBox x:Name="CompletionDialogCheckBox" Content="Show a completion dialog after tasks finish" Margin="0,8,0,0"/>
                 </StackPanel>
             </GroupBox>
 
-            <Grid Grid.Row="8">
+            <Grid Margin="0,16,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel>
-                    <TextBlock x:Name="ToolsStatusText"
-                               Text="Checking tools..."
-                               Foreground="#666666"/>
+                    <TextBlock x:Name="ToolsStatusText" Foreground="{DynamicResource MutedTextBrush}"/>
                     <TextBlock x:Name="SettingsPathText"
-                               Text=""
-                               Foreground="#777777"
+                               Foreground="{DynamicResource MutedTextBrush}"
                                FontSize="11"
                                Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1"
-                            Orientation="Horizontal">
-                    <Button Content="Reset defaults"
-                            Click="Reset_Click"
-                            Padding="14,5"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Content="Reset defaults" Click="Reset_Click"/>
                     <Button Content="Save settings"
                             Click="Save_Click"
-                            Padding="14,5"
                             Margin="8,0,0,0"
+                            Padding="16,5"
                             FontWeight="SemiBold"/>
                 </StackPanel>
             </Grid>
-        </Grid>
+        </StackPanel>
     </ScrollViewer>
 </UserControl>

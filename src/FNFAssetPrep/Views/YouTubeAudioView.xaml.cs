@@ -12,12 +12,10 @@ public partial class YouTubeAudioView : UserControl
     private readonly MediaDownloadService _downloadService = new();
     private CancellationTokenSource? _cancellationTokenSource;
     private bool _folderChangedByUser;
-    private MediaInfo? _mediaInfo;
 
     public YouTubeAudioView(SettingsService settingsService)
     {
         InitializeComponent();
-
         _settingsService = settingsService;
         ApplySettings(forceFolder: true);
         RefreshToolStatus();
@@ -25,12 +23,18 @@ public partial class YouTubeAudioView : UserControl
 
     public void ApplySettings(bool forceFolder = false)
     {
+        var settings = _settingsService.Settings;
+
         if (forceFolder || !_folderChangedByUser)
         {
-            DownloadFolderText.Text = _settingsService.Settings.DownloadOutputFolder;
+            DownloadFolderText.Text = settings.DownloadOutputFolder;
         }
 
-        SetFormat(_settingsService.Settings.DownloadFormat);
+        SelectCombo(FormatCombo, settings.DownloadFormat);
+        SelectCombo(QualityCombo, settings.DownloadQuality);
+        SelectCombo(FileNameCombo, settings.DownloadFileNameMode);
+        MetadataCheckBox.IsChecked = settings.EmbedMetadata;
+        ThumbnailCheckBox.IsChecked = settings.EmbedThumbnail;
         RefreshToolStatus();
     }
 
@@ -45,17 +49,16 @@ public partial class YouTubeAudioView : UserControl
         }
 
         SetBusy(true, "Checking link...");
-        _mediaInfo = null;
 
         try
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(45));
-            _mediaInfo = await _downloadService.GetInfoAsync(url, cts.Token);
+            var media = await _downloadService.GetInfoAsync(url, cts.Token);
 
-            VideoTitleText.Text = _mediaInfo.Title;
-            VideoChannelText.Text = _mediaInfo.Channel;
-            VideoDurationText.Text = _mediaInfo.Duration;
-            AddActivity("Loaded: " + _mediaInfo.Title);
+            VideoTitleText.Text = media.Title;
+            VideoChannelText.Text = media.Channel;
+            VideoDurationText.Text = media.Duration;
+            AddActivity("Loaded: " + media.Title);
             DownloadStatusText.Text = "Ready to download";
         }
         catch (Exception exception)
@@ -88,15 +91,9 @@ public partial class YouTubeAudioView : UserControl
             return;
         }
 
-        if (!MediaDownloadService.HasDownloader)
+        if (!MediaDownloadService.HasDownloader || !AssetProcessor.HasAudioEngine)
         {
-            ShowError("yt-dlp is missing from the tools folder.");
-            return;
-        }
-
-        if (!AssetProcessor.HasAudioEngine)
-        {
-            ShowError("FFmpeg is missing from the tools folder.");
+            ShowError("The download tools are missing from the tools folder.");
             return;
         }
 
@@ -105,8 +102,14 @@ public partial class YouTubeAudioView : UserControl
         CancelButton.IsEnabled = true;
         DownloadProgressBar.Value = 0;
 
-        var format = GetSelectedFormat();
-        AddActivity("Starting " + format + " download.");
+        var options = new DownloadOptions(
+            ReadCombo(FormatCombo, "OGG"),
+            ReadCombo(QualityCombo, "Best"),
+            ReadCombo(FileNameCombo, "Title [ID]"),
+            MetadataCheckBox.IsChecked == true,
+            ThumbnailCheckBox.IsChecked == true);
+
+        AddActivity($"Starting {options.Format} download.");
 
         var progress = new Progress<DownloadProgress>(item =>
         {
@@ -123,7 +126,6 @@ public partial class YouTubeAudioView : UserControl
             if (!string.IsNullOrWhiteSpace(item.Message))
             {
                 DownloadStatusText.Text = item.Message;
-                AddActivity(item.Message);
             }
         });
 
@@ -132,7 +134,7 @@ public partial class YouTubeAudioView : UserControl
             var finalPath = await _downloadService.DownloadAudioAsync(
                 url,
                 outputFolder,
-                format,
+                options,
                 progress,
                 _cancellationTokenSource.Token);
 
@@ -148,6 +150,16 @@ public partial class YouTubeAudioView : UserControl
             if (_settingsService.Settings.OpenFolderAfterTask)
             {
                 ShellService.OpenFolder(outputFolder);
+            }
+
+            if (_settingsService.Settings.ShowCompletionDialog)
+            {
+                MessageBox.Show(
+                    Window.GetWindow(this),
+                    "Audio download finished.",
+                    "FNF Asset Prep",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
             }
         }
         catch (OperationCanceledException)
@@ -170,10 +182,8 @@ public partial class YouTubeAudioView : UserControl
         }
     }
 
-    private void Cancel_Click(object sender, RoutedEventArgs e)
-    {
+    private void Cancel_Click(object sender, RoutedEventArgs e) =>
         _cancellationTokenSource?.Cancel();
-    }
 
     private void ChooseDownloadFolder_Click(object sender, RoutedEventArgs e)
     {
@@ -193,34 +203,8 @@ public partial class YouTubeAudioView : UserControl
         }
     }
 
-    private void OpenDownloadFolder_Click(object sender, RoutedEventArgs e)
-    {
+    private void OpenDownloadFolder_Click(object sender, RoutedEventArgs e) =>
         ShellService.OpenFolder(DownloadFolderText.Text.Trim());
-    }
-
-    private void SetFormat(string format)
-    {
-        foreach (var item in FormatCombo.Items.OfType<ComboBoxItem>())
-        {
-            if (string.Equals(
-                item.Content?.ToString(),
-                format,
-                StringComparison.OrdinalIgnoreCase))
-            {
-                FormatCombo.SelectedItem = item;
-                return;
-            }
-        }
-
-        FormatCombo.SelectedIndex = 0;
-    }
-
-    private string GetSelectedFormat()
-    {
-        return FormatCombo.SelectedItem is ComboBoxItem item
-            ? item.Content?.ToString() ?? "OGG"
-            : "OGG";
-    }
 
     private void SetBusy(bool busy, string? status = null)
     {
@@ -228,6 +212,8 @@ public partial class YouTubeAudioView : UserControl
         DownloadButton.IsEnabled = !busy;
         UrlTextBox.IsEnabled = !busy;
         FormatCombo.IsEnabled = !busy;
+        QualityCombo.IsEnabled = !busy;
+        FileNameCombo.IsEnabled = !busy;
 
         if (!string.IsNullOrWhiteSpace(status))
         {
@@ -237,19 +223,13 @@ public partial class YouTubeAudioView : UserControl
 
     private void RefreshToolStatus()
     {
-        DownloaderStatusText.Text = MediaDownloadService.HasDownloader
-            ? "yt-dlp: ready"
-            : "yt-dlp: missing";
-
-        FfmpegStatusText.Text = AssetProcessor.HasAudioEngine
-            ? "FFmpeg: ready"
-            : "FFmpeg: missing";
+        DownloaderStatusText.Text = MediaDownloadService.HasDownloader ? "yt-dlp: ready" : "yt-dlp: missing";
+        FfmpegStatusText.Text = AssetProcessor.HasAudioEngine ? "FFmpeg: ready" : "FFmpeg: missing";
     }
 
     private void AddActivity(string message)
     {
-        var timestamp = DateTime.Now.ToString("HH:mm:ss");
-        ActivityTextBox.AppendText("[" + timestamp + "] " + message + Environment.NewLine);
+        ActivityTextBox.AppendText($"[{DateTime.Now:HH:mm:ss}] {message}{Environment.NewLine}");
         ActivityTextBox.ScrollToEnd();
     }
 
@@ -258,4 +238,21 @@ public partial class YouTubeAudioView : UserControl
         DownloadStatusText.Text = message;
         AddActivity("Error: " + message);
     }
+
+    private static void SelectCombo(ComboBox combo, string value)
+    {
+        foreach (var item in combo.Items.OfType<ComboBoxItem>())
+        {
+            if (string.Equals(item.Content?.ToString(), value, StringComparison.OrdinalIgnoreCase))
+            {
+                combo.SelectedItem = item;
+                return;
+            }
+        }
+
+        combo.SelectedIndex = 0;
+    }
+
+    private static string ReadCombo(ComboBox combo, string fallback) =>
+        combo.SelectedItem is ComboBoxItem item ? item.Content?.ToString() ?? fallback : fallback;
 }

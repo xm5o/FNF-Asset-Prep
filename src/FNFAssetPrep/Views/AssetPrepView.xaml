@@ -6,198 +6,148 @@
              DragOver="View_DragOver"
              PreviewKeyDown="View_PreviewKeyDown">
 
-    <Grid Margin="18">
+    <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="12"/>
+            <RowDefinition Height="14"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <DockPanel Grid.Row="0">
-            <StackPanel DockPanel.Dock="Left">
-                <TextBlock Text="Asset Prep"
-                           FontSize="26"
-                           FontWeight="SemiBold"/>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel>
+                <TextBlock Text="Asset Prep" FontSize="27" FontWeight="SemiBold"/>
                 <TextBlock Text="Prepare images as PNG and audio as OGG for FNF."
-                           Foreground="#666666"
+                           Foreground="{DynamicResource MutedTextBrush}"
                            Margin="0,4,0,0"/>
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Bottom">
-                <Button Content="Add files"
-                        Click="AddFiles_Click"
-                        Padding="14,5"/>
-                <Button Content="Remove"
-                        Click="RemoveSelected_Click"
-                        Padding="14,5"
-                        Margin="6,0,0,0"/>
-                <Button Content="Clear"
-                        Click="Clear_Click"
-                        Padding="14,5"
-                        Margin="6,0,0,0"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
+                <Button Content="Add files" Click="AddFiles_Click" Padding="14,5"/>
+                <Button Content="Remove" Click="RemoveSelected_Click" Margin="6,0,0,0" Padding="14,5"/>
+                <Button Content="Clear" Click="Clear_Click" Margin="6,0,0,0" Padding="14,5"/>
             </StackPanel>
-        </DockPanel>
+        </Grid>
 
         <Grid Grid.Row="2">
+            <Border x:Name="EmptyState"
+                    Background="{DynamicResource SurfaceBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="28">
+                    <TextBlock Text="Drop image or audio files here"
+                               FontSize="19"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="or press Add files"
+                               Margin="0,7,0,0"
+                               Foreground="{DynamicResource MutedTextBrush}"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="PNG, JPG, WebP, BMP, TIFF, OGG, WAV, MP3, FLAC, M4A, AAC"
+                               Margin="0,16,0,0"
+                               Foreground="{DynamicResource MutedTextBrush}"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"
+                               MaxWidth="560"/>
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="FileTablePanel"
+                    Visibility="Collapsed"
+                    Background="{DynamicResource SurfaceBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="1">
+                <DataGrid x:Name="AssetGrid"
+                          ItemsSource="{Binding Assets}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
+                          SelectionMode="Extended"
+                          SelectionUnit="FullRow"
+                          GridLinesVisibility="Horizontal"
+                          HeadersVisibility="Column"
+                          BorderThickness="0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Name" Binding="{Binding FileName}" Width="*"/>
+                        <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="90"/>
+                        <DataGridTextColumn Header="From" Binding="{Binding SourceFormat}" Width="80"/>
+                        <DataGridTextColumn Header="To" Binding="{Binding TargetFormat}" Width="70"/>
+                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+        </Grid>
+
+        <Border Grid.Row="4"
+                Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="180"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Output folder" Foreground="{DynamicResource MutedTextBrush}"/>
+                    <TextBox x:Name="OutputFolderText"
+                             IsReadOnly="True"
+                             Margin="0,5,0,0"
+                             Padding="7,5"
+                             TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="OGG quality" Foreground="{DynamicResource MutedTextBrush}"/>
+                    <ComboBox x:Name="QualityCombo" Margin="0,5,0,0">
+                        <ComboBoxItem Content="3 - Smaller" Tag="3"/>
+                        <ComboBoxItem Content="4" Tag="4"/>
+                        <ComboBoxItem Content="5" Tag="5"/>
+                        <ComboBoxItem Content="6 - Balanced" Tag="6"/>
+                        <ComboBoxItem Content="7" Tag="7"/>
+                        <ComboBoxItem Content="8 - Higher" Tag="8"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Bottom">
+                    <Button Content="Browse..." Click="ChooseOutput_Click"/>
+                    <Button Content="Open" Click="OpenOutput_Click" Margin="6,0,0,0"/>
+                    <Button x:Name="PrepButton"
+                            Content="Prep files"
+                            Click="PrepFiles_Click"
+                            Margin="10,0,0,0"
+                            Padding="18,5"
+                            FontWeight="SemiBold"
+                            IsEnabled="False"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="4" VerticalAlignment="Bottom" Margin="0,82,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="12"/>
-                <ColumnDefinition Width="290"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-
-            <GroupBox Grid.Column="0" Header="Files">
-                <Grid>
-                    <DataGrid x:Name="AssetGrid"
-                              ItemsSource="{Binding Assets}"
-                              AutoGenerateColumns="False"
-                              IsReadOnly="True"
-                              CanUserAddRows="False"
-                              CanUserDeleteRows="False"
-                              SelectionMode="Extended"
-                              SelectionUnit="FullRow"
-                              GridLinesVisibility="Horizontal"
-                              HeadersVisibility="Column"
-                              BorderThickness="0"
-                              ToolTipService.ShowDuration="12000">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Name" Binding="{Binding FileName}" Width="*"/>
-                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="85"/>
-                            <DataGridTextColumn Header="From" Binding="{Binding SourceFormat}" Width="75"/>
-                            <DataGridTextColumn Header="To" Binding="{Binding TargetFormat}" Width="65"/>
-                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
-
-                    <Border x:Name="EmptyHint"
-                            Background="#FAFAFA"
-                            BorderBrush="#D8D8D8"
-                            BorderThickness="1"
-                            Margin="18"
-                            CornerRadius="3"
-                            IsHitTestVisible="False">
-                        <StackPanel HorizontalAlignment="Center"
-                                    VerticalAlignment="Center">
-                            <TextBlock Text="Drop image or audio files here"
-                                       FontSize="18"
-                                       FontWeight="SemiBold"
-                                       HorizontalAlignment="Center"/>
-                            <TextBlock Text="or press Add files"
-                                       Margin="0,6,0,0"
-                                       Foreground="#666666"
-                                       HorizontalAlignment="Center"/>
-                            <TextBlock Text="PNG, JPG, WebP, BMP, TIFF, OGG, WAV, MP3, FLAC, M4A, AAC"
-                                       Margin="0,14,0,0"
-                                       Foreground="#777777"
-                                       HorizontalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-                </Grid>
-            </GroupBox>
-
-            <StackPanel Grid.Column="2">
-                <GroupBox Header="Output" Margin="0,0,0,10">
-                    <StackPanel Margin="8">
-                        <TextBlock Text="Folder" Margin="0,0,0,5"/>
-                        <TextBox x:Name="OutputFolderText"
-                                 IsReadOnly="True"
-                                 TextWrapping="Wrap"
-                                 MinHeight="48"
-                                 Padding="6"
-                                 VerticalScrollBarVisibility="Auto"/>
-                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                            <Button Content="Browse..."
-                                    Click="ChooseOutput_Click"
-                                    Padding="12,4"/>
-                            <Button Content="Open folder"
-                                    Click="OpenOutput_Click"
-                                    Padding="12,4"
-                                    Margin="6,0,0,0"/>
-                        </StackPanel>
-                    </StackPanel>
-                </GroupBox>
-
-                <GroupBox Header="Audio" Margin="0,0,0,10">
-                    <StackPanel Margin="8">
-                        <TextBlock Text="OGG Vorbis quality"/>
-                        <ComboBox x:Name="QualityCombo"
-                                  Margin="0,6,0,0">
-                            <ComboBoxItem Content="3 - Smaller file" Tag="3"/>
-                            <ComboBoxItem Content="4" Tag="4"/>
-                            <ComboBoxItem Content="5" Tag="5"/>
-                            <ComboBoxItem Content="6 - Balanced" Tag="6"/>
-                            <ComboBoxItem Content="7" Tag="7"/>
-                            <ComboBoxItem Content="8 - Higher quality" Tag="8"/>
-                        </ComboBox>
-                        <TextBlock Text="PNG and OGG files are copied. Other supported files are converted."
-                                   TextWrapping="Wrap"
-                                   Foreground="#666666"
-                                   Margin="0,8,0,0"/>
-                    </StackPanel>
-                </GroupBox>
-
-                <GroupBox Header="Summary" Margin="0,0,0,10">
-                    <Grid Margin="8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <TextBlock Grid.Row="0" Text="Images"/>
-                        <TextBlock Grid.Row="0"
-                                   Grid.Column="1"
-                                   x:Name="ImageCountText"
-                                   Text="0"
-                                   FontWeight="SemiBold"/>
-
-                        <TextBlock Grid.Row="1"
-                                   Text="Audio"
-                                   Margin="0,6,0,0"/>
-                        <TextBlock Grid.Row="1"
-                                   Grid.Column="1"
-                                   x:Name="AudioCountText"
-                                   Text="0"
-                                   FontWeight="SemiBold"
-                                   Margin="0,6,0,0"/>
-
-                        <TextBlock Grid.Row="2"
-                                   Text="Total"
-                                   Margin="0,6,0,0"/>
-                        <TextBlock Grid.Row="2"
-                                   Grid.Column="1"
-                                   x:Name="TotalCountText"
-                                   Text="0"
-                                   FontWeight="SemiBold"
-                                   Margin="0,6,0,0"/>
-                    </Grid>
-                </GroupBox>
-
-                <Button x:Name="PrepButton"
-                        Content="Prep files"
-                        Click="PrepFiles_Click"
-                        Height="42"
-                        FontWeight="SemiBold"
-                        IsEnabled="False"/>
-
-                <ProgressBar x:Name="ProgressBar"
-                             Minimum="0"
-                             Maximum="1"
-                             Value="0"
-                             Height="16"
-                             Margin="0,10,0,0"/>
-
-                <TextBlock x:Name="ProgressText"
-                           Text=""
-                           Foreground="#555555"
-                           TextWrapping="Wrap"
-                           Margin="0,6,0,0"/>
-            </StackPanel>
+            <ProgressBar x:Name="ProgressBar" Minimum="0" Maximum="1" Value="0" Height="8"/>
+            <TextBlock x:Name="ProgressText"
+                       Grid.Column="1"
+                       Margin="12,-6,0,0"
+                       Foreground="{DynamicResource MutedTextBrush}"/>
         </Grid>
     </Grid>
 </UserControl>

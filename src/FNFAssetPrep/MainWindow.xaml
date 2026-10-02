@@ -7,9 +7,7 @@
         MinWidth="940"
         MinHeight="620"
         WindowStartupLocation="CenterScreen"
-        Background="#F3F3F3"
-        FontFamily="Segoe UI"
-        FontSize="13">
+        Closing="Window_Closing">
 
     <DockPanel LastChildFill="True">
         <Menu DockPanel.Dock="Top">
@@ -20,6 +18,7 @@
             </MenuItem>
             <MenuItem Header="_View">
                 <MenuItem Header="_Asset Prep" Click="MenuAssetPrep_Click"/>
+                <MenuItem Header="Audio _Converter" Click="MenuConverter_Click"/>
                 <MenuItem Header="_YouTube Audio" Click="MenuYouTube_Click"/>
                 <MenuItem Header="_Settings" Click="MenuSettings_Click"/>
                 <MenuItem Header="_About" Click="MenuAbout_Click"/>
@@ -38,28 +37,28 @@
                 <TextBlock x:Name="ToolStatusText" Text="Checking tools..."/>
             </StatusBarItem>
             <Separator/>
-            <StatusBarItem HorizontalAlignment="Right">
-                <TextBlock Text="Native test build"/>
+            <StatusBarItem>
+                <TextBlock x:Name="ThemeStatusText" Text="Theme"/>
             </StatusBarItem>
         </StatusBar>
 
-        <Grid>
+        <Grid Background="{DynamicResource AppBackgroundBrush}">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="190"/>
+                <ColumnDefinition Width="205"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0"
-                    Background="#F8F8F8"
-                    BorderBrush="#D8D8D8"
+                    Background="{DynamicResource SidebarBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
                     BorderThickness="0,0,1,0">
                 <DockPanel>
-                    <StackPanel DockPanel.Dock="Top" Margin="16,18,16,10">
+                    <StackPanel DockPanel.Dock="Top" Margin="16,18,16,12">
                         <TextBlock Text="FNF Asset Prep"
-                                   FontSize="18"
+                                   FontSize="19"
                                    FontWeight="SemiBold"/>
                         <TextBlock Text="Desktop toolbox"
-                                   Foreground="#666666"
+                                   Foreground="{DynamicResource MutedTextBrush}"
                                    Margin="0,3,0,0"/>
                     </StackPanel>
 
@@ -68,16 +67,18 @@
                              BorderThickness="0"
                              Background="Transparent"
                              SelectionChanged="NavigationList_SelectionChanged">
-                        <ListBoxItem Tag="assets" Padding="12,9">Asset Prep</ListBoxItem>
-                        <ListBoxItem Tag="youtube" Padding="12,9">YouTube Audio</ListBoxItem>
-                        <ListBoxItem Tag="settings" Padding="12,9">Settings</ListBoxItem>
-                        <ListBoxItem Tag="about" Padding="12,9">About</ListBoxItem>
+                        <ListBoxItem Tag="assets" Padding="12,10">Asset Prep</ListBoxItem>
+                        <ListBoxItem Tag="converter" Padding="12,10">Audio Converter</ListBoxItem>
+                        <ListBoxItem Tag="youtube" Padding="12,10">YouTube Audio</ListBoxItem>
+                        <ListBoxItem Tag="settings" Padding="12,10" Margin="0,10,0,0">Settings</ListBoxItem>
+                        <ListBoxItem Tag="about" Padding="12,10">About</ListBoxItem>
                     </ListBox>
                 </DockPanel>
             </Border>
 
             <ContentControl Grid.Column="1"
-                            x:Name="PageHost"/>
+                            x:Name="PageHost"
+                            Background="{DynamicResource AppBackgroundBrush}"/>
         </Grid>
     </DockPanel>
 </Window>

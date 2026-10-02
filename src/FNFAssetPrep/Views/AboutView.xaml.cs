@@ -14,6 +14,7 @@ public partial class AboutView : UserControl
     public void Refresh()
     {
         RuntimeText.Text = ".NET " + Environment.Version;
+        ThemeText.Text = ThemeService.ResolvedTheme;
         FfmpegText.Text = AssetProcessor.HasAudioEngine ? "Ready" : "Missing";
         YtDlpText.Text = MediaDownloadService.HasDownloader ? "Ready" : "Missing";
     }

@@ -48,19 +48,7 @@ public sealed partial class MediaDownloadService
         using var process = new Process { StartInfo = startInfo };
         process.Start();
 
-        using var registration = cancellationToken.Register(() =>
-        {
-            try
-            {
-                if (!process.HasExited)
-                {
-                    process.Kill(entireProcessTree: true);
-                }
-            }
-            catch
-            {
-            }
-        });
+        using var registration = cancellationToken.Register(() => Kill(process));
 
         var stdoutTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
         var stderrTask = process.StandardError.ReadToEndAsync(cancellationToken);
@@ -109,17 +97,14 @@ public sealed partial class MediaDownloadService
     public async Task<string?> DownloadAudioAsync(
         string url,
         string outputDirectory,
-        string format,
+        DownloadOptions options,
         IProgress<DownloadProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
         EnsureReady(url, needsFfmpeg: true);
-
         Directory.CreateDirectory(outputDirectory);
 
-        var audioFormat = MapFormat(format);
         var startInfo = CreateStartInfo();
-
         startInfo.ArgumentList.Add("--no-playlist");
         startInfo.ArgumentList.Add("--no-warnings");
         startInfo.ArgumentList.Add("--newline");
@@ -129,32 +114,32 @@ public sealed partial class MediaDownloadService
         startInfo.ArgumentList.Add(Path.GetDirectoryName(AssetProcessor.FfmpegPath)!);
         startInfo.ArgumentList.Add("--extract-audio");
         startInfo.ArgumentList.Add("--audio-format");
-        startInfo.ArgumentList.Add(audioFormat);
+        startInfo.ArgumentList.Add(MapFormat(options.Format));
         startInfo.ArgumentList.Add("--audio-quality");
-        startInfo.ArgumentList.Add("0");
+        startInfo.ArgumentList.Add(MapQuality(options.Quality));
+
+        if (options.EmbedMetadata)
+        {
+            startInfo.ArgumentList.Add("--embed-metadata");
+        }
+
+        if (options.EmbedThumbnail)
+        {
+            startInfo.ArgumentList.Add("--embed-thumbnail");
+            startInfo.ArgumentList.Add("--convert-thumbnails");
+            startInfo.ArgumentList.Add("jpg");
+        }
+
         startInfo.ArgumentList.Add("--print");
         startInfo.ArgumentList.Add("after_move:FINAL:%(filepath)s");
         startInfo.ArgumentList.Add("--output");
-        startInfo.ArgumentList.Add(
-            Path.Combine(outputDirectory, "%(title).180B [%(id)s].%(ext)s"));
+        startInfo.ArgumentList.Add(Path.Combine(outputDirectory, FileNameTemplate(options.FileNameMode)));
         startInfo.ArgumentList.Add(url);
 
         using var process = new Process { StartInfo = startInfo };
         process.Start();
 
-        using var registration = cancellationToken.Register(() =>
-        {
-            try
-            {
-                if (!process.HasExited)
-                {
-                    process.Kill(entireProcessTree: true);
-                }
-            }
-            catch
-            {
-            }
-        });
+        using var registration = cancellationToken.Register(() => Kill(process));
 
         var errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
         string? finalPath = null;
@@ -168,8 +153,7 @@ public sealed partial class MediaDownloadService
                 continue;
             }
 
-            var percent = TryReadPercent(line);
-            progress?.Report(new DownloadProgress(percent, CleanLine(line)));
+            progress?.Report(new DownloadProgress(TryReadPercent(line), CleanLine(line)));
         }
 
         await process.WaitForExitAsync(cancellationToken);
@@ -186,17 +170,14 @@ public sealed partial class MediaDownloadService
         return finalPath;
     }
 
-    private static ProcessStartInfo CreateStartInfo()
+    private static ProcessStartInfo CreateStartInfo() => new()
     {
-        return new ProcessStartInfo
-        {
-            FileName = YtDlpPath,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
-        };
-    }
+        FileName = YtDlpPath,
+        UseShellExecute = false,
+        CreateNoWindow = true,
+        RedirectStandardOutput = true,
+        RedirectStandardError = true
+    };
 
     private static void EnsureReady(string url, bool needsFfmpeg)
     {
@@ -207,22 +188,17 @@ public sealed partial class MediaDownloadService
 
         if (!HasDownloader)
         {
-            throw new FileNotFoundException(
-                "yt-dlp was not found in the tools folder.",
-                YtDlpPath);
+            throw new FileNotFoundException("yt-dlp was not found in the tools folder.", YtDlpPath);
         }
 
         if (needsFfmpeg && !AssetProcessor.HasAudioEngine)
         {
-            throw new FileNotFoundException(
-                "FFmpeg was not found in the tools folder.",
-                AssetProcessor.FfmpegPath);
+            throw new FileNotFoundException("FFmpeg was not found in the tools folder.", AssetProcessor.FfmpegPath);
         }
     }
 
-    private static string MapFormat(string format)
-    {
-        return format.Trim().ToUpperInvariant() switch
+    private static string MapFormat(string format) =>
+        format.Trim().ToUpperInvariant() switch
         {
             "OGG" => "vorbis",
             "MP3" => "mp3",
@@ -234,12 +210,26 @@ public sealed partial class MediaDownloadService
             "ALAC" => "alac",
             _ => "vorbis"
         };
-    }
 
-    private static string ReadString(
-        JsonElement element,
-        string property,
-        string fallback)
+    private static string MapQuality(string quality) =>
+        quality switch
+        {
+            "Best" => "0",
+            "High" => "2",
+            "Balanced" => "5",
+            "Small" => "7",
+            _ => "0"
+        };
+
+    private static string FileNameTemplate(string mode) =>
+        mode switch
+        {
+            "Title" => "%(title).180B.%(ext)s",
+            "Channel - Title" => "%(uploader).70B - %(title).130B.%(ext)s",
+            _ => "%(title).160B [%(id)s].%(ext)s"
+        };
+
+    private static string ReadString(JsonElement element, string property, string fallback)
     {
         if (!element.TryGetProperty(property, out var value)
             || value.ValueKind != JsonValueKind.String)
@@ -267,12 +257,22 @@ public sealed partial class MediaDownloadService
                 : null;
     }
 
-    private static string CleanLine(string value)
+    private static void Kill(Process process)
     {
-        return value
-            .Replace("[download]", string.Empty, StringComparison.OrdinalIgnoreCase)
-            .Trim();
+        try
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+            }
+        }
+        catch
+        {
+        }
     }
+
+    private static string CleanLine(string value) =>
+        value.Replace("[download]", string.Empty, StringComparison.OrdinalIgnoreCase).Trim();
 
     private static string CleanError(string value)
     {

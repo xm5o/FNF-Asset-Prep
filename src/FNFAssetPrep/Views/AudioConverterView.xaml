@@ -1,0 +1,127 @@
+<UserControl x:Class="FNFAssetPrep.Views.AudioConverterView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AllowDrop="True"
+             DragOver="View_DragOver"
+             Drop="View_Drop">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="14"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel>
+                <TextBlock Text="Audio Converter" FontSize="27" FontWeight="SemiBold"/>
+                <TextBlock Text="Convert local audio files without leaving the app."
+                           Foreground="{DynamicResource MutedTextBrush}"
+                           Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
+                <Button Content="Add audio" Click="AddFiles_Click"/>
+                <Button Content="Remove" Click="Remove_Click" Margin="6,0,0,0"/>
+                <Button Content="Clear" Click="Clear_Click" Margin="6,0,0,0"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="2">
+            <Border x:Name="EmptyState"
+                    Background="{DynamicResource SurfaceBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="Drop audio files here" FontSize="19" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                    <TextBlock Text="WAV, MP3, FLAC, M4A, AAC, OGG, Opus, WMA"
+                               Foreground="{DynamicResource MutedTextBrush}"
+                               Margin="0,8,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="FileTablePanel"
+                    Visibility="Collapsed"
+                    Background="{DynamicResource SurfaceBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6">
+                <DataGrid x:Name="AudioGrid"
+                          ItemsSource="{Binding Items}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserAddRows="False"
+                          SelectionMode="Extended"
+                          SelectionUnit="FullRow"
+                          BorderThickness="0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Name" Binding="{Binding FileName}" Width="*"/>
+                        <DataGridTextColumn Header="From" Binding="{Binding SourceFormat}" Width="100"/>
+                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+        </Grid>
+
+        <Border Grid.Row="4"
+                Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="140"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="140"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <TextBlock Text="Output folder" Foreground="{DynamicResource MutedTextBrush}"/>
+                    <TextBox x:Name="OutputFolderText" IsReadOnly="True" Margin="0,5,0,0" Padding="7,5"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="Format" Foreground="{DynamicResource MutedTextBrush}"/>
+                    <ComboBox x:Name="FormatCombo" Margin="0,5,0,0">
+                        <ComboBoxItem Content="OGG"/><ComboBoxItem Content="MP3"/><ComboBoxItem Content="WAV"/>
+                        <ComboBoxItem Content="FLAC"/><ComboBoxItem Content="M4A"/><ComboBoxItem Content="OPUS"/>
+                        <ComboBoxItem Content="AAC"/><ComboBoxItem Content="ALAC"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Grid.Column="4">
+                    <TextBlock Text="Quality" Foreground="{DynamicResource MutedTextBrush}"/>
+                    <ComboBox x:Name="QualityCombo" Margin="0,5,0,0">
+                        <ComboBoxItem Content="Best"/><ComboBoxItem Content="High"/>
+                        <ComboBoxItem Content="Balanced"/><ComboBoxItem Content="Small"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Bottom">
+                    <Button Content="Browse..." Click="Browse_Click"/>
+                    <Button Content="Open" Click="Open_Click" Margin="6,0,0,0"/>
+                    <Button x:Name="ConvertButton"
+                            Content="Convert"
+                            Click="Convert_Click"
+                            Margin="10,0,0,0"
+                            Padding="18,5"
+                            FontWeight="SemiBold"
+                            IsEnabled="False"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
