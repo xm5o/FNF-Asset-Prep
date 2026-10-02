@@ -108,8 +108,7 @@
                     <TextBox x:Name="OutputFolderText"
                              IsReadOnly="True"
                              Margin="0,5,0,0"
-                             Padding="7,5"
-                             TextTrimming="CharacterEllipsis"/>
+                             Padding="7,5"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="2">
