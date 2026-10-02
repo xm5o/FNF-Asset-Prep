@@ -1,26 +1,26 @@
 # Contributing
 
-Thanks for helping FNF Asset Prep.
+The native rewrite uses C# and WPF.
 
-## Before you start
+## Setup
 
-- Keep the app focused on asset preparation.
-- Do not make the tool scan or edit a full FNF mod without a clear reason.
+Install the .NET 8 SDK.
+
+\`\`\`powershell
+dotnet restore FNFAssetPrep.sln
+dotnet run --project src/FNFAssetPrep/FNFAssetPrep.csproj
+\`\`\`
+
+## Rules
+
+- Keep the UI desktop-first.
+- Do not add HTML, CSS, Electron, or a browser-based UI.
 - Do not overwrite source files.
-- Keep PNG and OGG as the target formats.
-- Test file names with spaces and non-English characters.
-
-## Local setup
-
-```bash
-npm install
-npm start
-```
+- Images must output as PNG.
+- Audio must output as OGG Vorbis.
+- Keep changes easy to understand.
+- Test paths with spaces and non-English characters.
 
 ## Pull requests
 
-Explain:
-
-1. What changed.
-2. Why it changed.
-3. Which file formats you tested.
+Explain what changed, why it changed, and which file types you tested.

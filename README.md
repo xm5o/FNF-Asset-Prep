@@ -1,130 +1,94 @@
 # FNF Asset Prep
 
-FNF Asset Prep is a small desktop utility for preparing image and audio files before you place them in a Friday Night Funkin' mod.
+FNF Asset Prep prepares source images and audio for Friday Night Funkin' mods.
 
-The goal is simple:
+This branch contains the native Windows rewrite.
 
-- Images become `.png`
-- Audio becomes `.ogg`
+## Native rewrite
 
-It does not scan or rewrite your full mod. You choose the source files you want to prepare.
+The old public v0.1.0 app uses Electron. The new development build does not.
 
-## Why this exists
+The native rewrite uses:
 
-FNF engines normally expect common game assets in formats such as PNG for images and OGG for audio. Source art and audio often start as JPG, WebP, WAV, MP3, FLAC, or another format.
+- C#
+- .NET 8
+- WPF
+- Windows file dialogs
+- A normal Windows menu, toolbar, file table, and status bar
+- ImageSharp for image decoding and PNG output
+- FFmpeg for OGG Vorbis audio output
 
-FNF Asset Prep gives you one small place to convert those files without opening a full editor.
+There is no HTML, CSS, browser view, or JavaScript UI in this version.
 
-## Main features
+## What it does
 
-- Add several files at once
-- Drag files into the window
-- Convert JPG, JPEG, WebP, BMP, and TIFF images to PNG
-- Convert WAV, MP3, FLAC, M4A, and AAC audio to OGG Vorbis
-- Copy files that are already PNG or OGG
-- Keep transparent image data when the source supports it
-- Choose OGG quality from 0 to 10
-- Keep the original source files unchanged
-- Avoid overwriting files with the same name
-- Open the output folder from the app
+Images:
 
-## Download
+- PNG stays PNG
+- JPG to PNG
+- JPEG to PNG
+- WebP to PNG
+- BMP to PNG
+- TIFF to PNG
 
-The easiest way to use the app is the Windows build from the GitHub Releases page.
+Audio:
 
-Each tagged release builds:
+- OGG stays OGG
+- WAV to OGG
+- MP3 to OGG
+- FLAC to OGG
+- M4A to OGG
+- AAC to OGG
 
-- A normal Windows installer
-- A portable Windows `.exe`
+Source files are never edited in place.
 
-The release workflow is included in `.github/workflows/release.yml`.
+If an output name already exists, the app creates a new name such as:
 
-For release steps, read [docs/PUBLISHING.md](docs/PUBLISHING.md).
-
-## Run from source
-
-You need Node.js 20 or newer.
-
-```bash
-git clone https://github.com/xm5o/FNF-Asset-Prep.git
-cd FNF-Asset-Prep
-npm install
-npm start
-```
-
-## Build the Windows app
-
-```bash
-npm install
-npm run dist
-```
-
-The Windows files will be placed in `dist/`.
-
-## How to use it
-
-1. Open FNF Asset Prep.
-2. Press `Add files` or drop source files into the window.
-3. Choose an output folder.
-4. Set the OGG quality if you want to change it. Quality 6 is a good general default.
-5. Press `Prep files`.
-6. Open the output folder and move the prepared assets into your mod.
-
-Read [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) for more detail.
-
-## Supported input formats
-
-### Images
-
-```text
-.png
-.jpg
-.jpeg
-.webp
-.bmp
-.tif
-.tiff
-```
-
-Output: `.png`
-
-### Audio
-
-```text
-.ogg
-.wav
-.mp3
-.flac
-.m4a
-.aac
-```
-
-Output: `.ogg`
-
-## What happens to PNG and OGG files
-
-If a file is already PNG or OGG, the app copies it into the output folder. It does not convert it to another format.
-
-## File safety
-
-The app never edits the source file in place.
-
-If the output folder already contains a file with the same name, a number is added to the new file name instead of overwriting the old one.
-
-Example:
-
-```text
+\`\`\`text
 Inst.ogg
 Inst_2.ogg
 Inst_3.ogg
-```
+\`\`\`
 
-## Windows warning
+## Desktop controls
 
-The first public builds are unsigned. Windows SmartScreen might show a warning because the executable does not have a paid code signing certificate.
+- Ctrl+O: Add files
+- Ctrl+Shift+O: Choose output folder
+- Delete: Remove selected files
+- Ctrl+L: Clear the list
+- Drag and drop: Add supported files
 
-Always download the app from the official repository release page.
+## Test build
 
-## License
+Pushes to the \`native-rewrite\` branch create a Windows test artifact through GitHub Actions.
 
-MIT. See [LICENSE](LICENSE).
+The test build is not published to GitHub Releases.
+
+The artifact contains:
+
+\`\`\`text
+FNF-Asset-Prep-Native-Test.exe
+tools/
+  ffmpeg.exe
+\`\`\`
+
+Keep the \`tools\` folder next to the EXE so audio conversion works.
+
+## Build locally
+
+You need the .NET 8 SDK.
+
+\`\`\`powershell
+dotnet restore FNFAssetPrep.sln
+dotnet run --project src/FNFAssetPrep/FNFAssetPrep.csproj
+\`\`\`
+
+For audio conversion, place \`ffmpeg.exe\` here:
+
+\`\`\`text
+src/FNFAssetPrep/bin/Debug/net8.0-windows/tools/ffmpeg.exe
+\`\`\`
+
+## Status
+
+This is a development rewrite for testing. The public v0.1.0 release stays unchanged until the native version is tested and approved.

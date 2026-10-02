@@ -1,0 +1,57 @@
+name: Native Windows test build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - native-rewrite
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore FNFAssetPrep.sln
+
+      - name: Publish native app
+        run: >
+          dotnet publish src/FNFAssetPrep/FNFAssetPrep.csproj
+          --configuration Release
+          --runtime win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:DebugType=None
+          -p:DebugSymbols=false
+          --output publish
+
+      - name: Add FFmpeg
+        shell: pwsh
+        run: |
+          Invoke-WebRequest "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip" -OutFile "$env:RUNNER_TEMP\ffmpeg.zip"
+          Expand-Archive "$env:RUNNER_TEMP\ffmpeg.zip" -DestinationPath "$env:RUNNER_TEMP\ffmpeg"
+          $ffmpeg = Get-ChildItem "$env:RUNNER_TEMP\ffmpeg" -Filter ffmpeg.exe -Recurse | Select-Object -First 1
+          if (-not $ffmpeg) { throw "ffmpeg.exe was not found in the downloaded archive." }
+          New-Item -ItemType Directory -Path "publish\tools" -Force | Out-Null
+          Copy-Item $ffmpeg.FullName "publish\tools\ffmpeg.exe"
+          Rename-Item "publish\FNFAssetPrep.exe" "FNF-Asset-Prep-Native-Test.exe"
+
+      - name: Upload test build
+        uses: actions/upload-artifact@v4
+        with:
+          name: FNF-Asset-Prep-Native-Test-win-x64
+          path: publish/
+          if-no-files-found: error
+          retention-days: 14

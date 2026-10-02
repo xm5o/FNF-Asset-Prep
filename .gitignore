@@ -1,5 +1,9 @@
-node_modules/
-dist/
+bin/
+obj/
+publish/
+.vs/
+*.user
+*.suo
 *.log
 .DS_Store
 Thumbs.db
