@@ -271,7 +271,7 @@ public partial class MainWindow : Window
         PrepButton.IsEnabled = !_isRunning && Assets.Count > 0 && !string.IsNullOrWhiteSpace(OutputFolderText.Text);
     }
 
-    private void Window_DragOver(object sender, DragEventArgs e)
+    private void Window_DragOver(object sender, System.Windows.DragEventArgs e)
     {
         e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop)
             ? DragDropEffects.Copy
@@ -279,7 +279,7 @@ public partial class MainWindow : Window
         e.Handled = true;
     }
 
-    private void Window_Drop(object sender, DragEventArgs e)
+    private void Window_Drop(object sender, System.Windows.DragEventArgs e)
     {
         if (_isRunning) return;
 
@@ -289,7 +289,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+    private void Window_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
         if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.O)
         {
